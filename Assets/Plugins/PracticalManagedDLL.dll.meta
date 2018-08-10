@@ -8,6 +8,9 @@ PluginImporter:
     Practical.Internal.ExperienceSequence: 300
     Practical.Internal.PracticalMap: 100
     Practical.Internal.WispMovement: 200
+    PracticalManaged.Practical.Internal.Guidance.WispManager: 200
+    PracticalManaged.Practical.Internal.Room.ExperienceUI: 300
+    PracticalManaged.Practical.Internal.Setup.ComponentManager: 50
   isPreloaded: 0
   isOverridable: 0
   platformData:
