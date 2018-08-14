@@ -2,7 +2,7 @@
 
 ## Setup Guide
 
-1. Register at [https://developer.practicalvr.com].
+1. Register at https://developer.practicalvr.com
 2. Join discord.practicalvr.com for approval.
 3. Create an application in the portal and copy your API Key.
 4. *Important* - before importing, in player settings, set the "Scripting Runtime Version" to 4.6 and the "Scripting Backend" to .NET.
