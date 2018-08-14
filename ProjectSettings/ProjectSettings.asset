@@ -574,9 +574,9 @@ PlayerSettings:
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: Assets\WSATestCertificate.pfx
   metroCertificatePassword: 
-  metroCertificateSubject: DefaultCompany
-  metroCertificateIssuer: DefaultCompany
-  metroCertificateNotAfter: 006354398af5d301
+  metroCertificateSubject: KeySDK
+  metroCertificateIssuer: KeySDK
+  metroCertificateNotAfter: 00faf7aa7f52d501
   metroApplicationDescription: KeySDK
   wsaImages:
     65636: 
