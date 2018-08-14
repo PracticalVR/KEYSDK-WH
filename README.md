@@ -1,5 +1,11 @@
 # KeySDK-WH
 
+(https://www.practicalvr.com/assets/images/key_blue.png "KEYSDK")
+
+## Target Unity Version: 2017.4.0f1
+
+KEYSDK should seamlessly upgrade to all current versions of unity. Please re-import the PracticaManaged DLL if you run into issues upgrading.
+
 ## Setup Guide
 
 1. Register at https://developer.practicalvr.com
@@ -64,9 +70,13 @@ All together, it should look like this:
     }
 ```
 
+There is an example folder that shows usage and has a scene to show functionality on device.
+
 ## Known Issues
 
 * There is a slight hang at the start of the application as it downloads a new theme. UX improvement to come.
 * The application will not start at all unless a valid API Key is provided. Check phantom spacing at the front and back of your key.
 * Returned locations are not always as random or spaced out as we would like.
+* The Practical Location Builder script throws a non-breaking error after pressing play.
+* Microphone is not enabled after receiving the permission pop-up on Windows RS4 and up.
 
