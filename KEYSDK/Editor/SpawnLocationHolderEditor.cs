@@ -19,7 +19,7 @@ namespace Practical.Internal
         private string newGroupName;            // We we want to create a new group
         private string tempEditingGroupName;    // When we want to change an existing group
 
-        
+
         [SerializeField]
         private Vector2 scrollPosition = Vector2.zero;
 
@@ -45,8 +45,8 @@ namespace Practical.Internal
 
         void OnEnable()
         {
-            holder = (PracticalLocationBuilder)target;
-            real = (PracticalLocator)target;
+            holder = PracticalLocationBuilder.Instance;
+            real = PracticalLocator.Instance;
             selectedGroupIndex = UNSELECTED;
             isEditingNameField = false;
             editButtonTex = (Texture)AssetDatabase.LoadAssetAtPath("Assets/Editor/Images/edit.png", typeof(Texture));
@@ -103,6 +103,7 @@ namespace Practical.Internal
                 {
                     AddNewGroup();
                 }
+                Undo.RecordObject(holder, "Added New Location Group");
             }
 
             EditorGUILayout.EndHorizontal();
@@ -154,9 +155,8 @@ namespace Practical.Internal
                             {
                                 holder.DefinedGroups[g].groupName = tempEditingGroupName;
                                 isEditingNameField = false;
-                                var scene = SceneManager.GetActiveScene();
-                                UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
                             }
+                            // Undo.RecordObject(holder, "Renamed Location Group");
                         }
 
                         editButtonRect.x += saveCancelButtonWidth + 5f;
@@ -273,8 +273,7 @@ namespace Practical.Internal
                         newSpawn.selectedSpawnObject = workingSpawnLocation.selectedSpawnObject;
 
                         holder.DefinedGroups[g].spawnLocations.Add(newSpawn);
-                        var scene = SceneManager.GetActiveScene();
-                        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+                        Undo.RecordObject(holder, "Added Spawn Type");
                     }
 
                     EditorGUILayout.EndHorizontal();
@@ -311,8 +310,7 @@ namespace Practical.Internal
                         if (GUILayout.Button("X", GUILayout.Width(addButtonWidth)))
                         {
                             holder.DefinedGroups[g].spawnLocations.RemoveAt(s);
-                            var scene = SceneManager.GetActiveScene();
-                            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+                            //Undo.RecordObject(holder, "Deleted Location Group");
                         }
                         GUI.backgroundColor = initialColor;
                         EditorGUILayout.EndHorizontal();
@@ -335,10 +333,14 @@ namespace Practical.Internal
 
             real.DefinedGroups = holder.DefinedGroups;
 
+            if (holder != null)
+            {
+                Undo.RecordObject(holder, "Updated Location Group");
+            }
             //serializedObject.UpdateIfRequiredOrScript();
         }
 
-        public SpawnLocation CreateSpawnLocation(SelectedSpawnType _spawnType, SelectedSpawnSize _selectedSpawnSize, SelectedSpawnObject _selectedSpawnObject )
+        public SpawnLocation CreateSpawnLocation(SelectedSpawnType _spawnType, SelectedSpawnSize _selectedSpawnSize, SelectedSpawnObject _selectedSpawnObject)
         {
             switch (_spawnType)
             {
@@ -361,9 +363,8 @@ namespace Practical.Internal
         public void OnInspectorUpdate()
         {
             this.Repaint();
-            var scene = SceneManager.GetActiveScene();
             real.DefinedGroups = holder.DefinedGroups;
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+            //Undo.RecordObject(holder, "Updated Location Group");
         }
 
         public void SetGroupIndex(int newIndex)
@@ -419,16 +420,14 @@ namespace Practical.Internal
             }
             newGroupName = "";
             GUIUtility.keyboardControl = 0;
-            var scene = SceneManager.GetActiveScene();
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+            Undo.RecordObject(holder, "Added Location Group");
             real.DefinedGroups = holder.DefinedGroups;
         }
 
         public void DeleteGroup(int index)
         {
             holder.DefinedGroups.RemoveAt(index);
-            var scene = SceneManager.GetActiveScene();
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
+            Undo.RecordObject(holder, "Deleted Location Group");
             real.DefinedGroups = holder.DefinedGroups;
         }
     }
