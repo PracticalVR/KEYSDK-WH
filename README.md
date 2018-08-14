@@ -1,6 +1,6 @@
 # KeySDK-WH
 
-(https://www.practicalvr.com/assets/images/key_blue.png "KEYSDK")
+![logo](key.png)
 
 ## Target Unity Version: 2017.4.0f1
 
