@@ -55,7 +55,7 @@ MonoBehaviour:
   m_Script: {fileID: 514093345, guid: 9f96a2362db041848a25893a8d71f79c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  APIKey: demokeyad56f2690d33c954a0939f0996120f81f2d46f1ac2999da94db555a92
+  APIKey: Insert one API Key
   customVersion: 1
   customTag: Practical_Beta
   AppScene: 2.ExampleScene
