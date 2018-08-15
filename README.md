@@ -29,7 +29,9 @@ You can customize spawn groups with the Practical Location Builder script locate
 
 ### For Example:
 
-First, include the spawning system into your script:
+First, you must add the `Practical Location Builder` script to a gameobject within your scene. Note: turning the object into a prefab will break this script. Please only save the chosen object via the Unity scene. This editor tool is where you can easily add new groups and select the types of places you'd like them to spawn. 
+
+Now, include the spawning system into your script:
 
 ```C#
 using PracticalManaged.Practical.SpatialSpawning;
@@ -41,7 +43,7 @@ then create an async method:
 private async void BlueSpawn()
 ```
 
-call the "GetSpawnPoint" API to return a position:
+call the "GetSpawnPoint" API and pass in the name of the group you created with the location builder inspector tool to return a position:
 
 ```C#
 SpawnLocation returnedLocation = await PracticalLocator.Instance.GetSpawnPoint("Yellow Group");
