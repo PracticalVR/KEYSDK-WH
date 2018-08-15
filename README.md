@@ -21,7 +21,7 @@ KEYSDK should seamlessly upgrade to all current versions of unity. Please re-imp
 
 ### Capabilities
 
-   * Pictues Library (App will hang without it)
+   * Pictures Library (App will hang without it)
    * Spatial Perception
    * Internet Client
    * Microphone (For Example Scene only)
