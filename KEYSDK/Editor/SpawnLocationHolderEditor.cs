@@ -15,7 +15,6 @@ namespace Practical.Internal
 
         [SerializeField]
         private PracticalLocator holder;
-        private PracticalLocator real;
         private string newGroupName;            // We we want to create a new group
         private string tempEditingGroupName;    // When we want to change an existing group
 
@@ -24,10 +23,6 @@ namespace Practical.Internal
         private Vector2 scrollPosition = Vector2.zero;
 
         private SpawnLocation workingSpawnLocation = new SpawnLocation(SelectedSpawnType.Wall, SelectedSpawnSize.Small);
-
-        // Custom styles (currently unused)
-        //private GUIStyle groupBoxStyle = null;
-        //private Color xButtonColor = new Color(.7f, .2f, .3f);
 
         private bool isEditingNameField = false;
         private Texture editButtonTex;
@@ -45,8 +40,7 @@ namespace Practical.Internal
 
         void OnEnable()
         {
-            holder = PracticalLocationBuilder.Instance;
-            real = PracticalLocator.Instance;
+            holder = (PracticalLocationBuilder)target;
             selectedGroupIndex = UNSELECTED;
             isEditingNameField = false;
             editButtonTex = (Texture)AssetDatabase.LoadAssetAtPath("Assets/Editor/Images/edit.png", typeof(Texture));
@@ -60,31 +54,8 @@ namespace Practical.Internal
             }
         }
 
-        //private void InitStyles() {
-        //	if(groupBoxStyle == null) {
-        //		groupBoxStyle = new GUIStyle(GUI.skin.box);
-        //	}
-        //}
-
-        //private Texture2D MakeTex(int width, int height, Color col) {
-        //	Color[] pix = new Color[width * height];
-        //	for(int i = 0; i < pix.Length; ++i) {
-        //		pix[i] = col;
-        //	}
-        //	Texture2D result = new Texture2D(width, height);
-        //	result.SetPixels(pix);
-        //	result.Apply();
-        //	return result;
-        //}
-
-
         public override void OnInspectorGUI()
         {
-
-            //InitStyles();
-
-            //serializedObject.Update();
-
             float addToListButtonWidth = Screen.width * 0.4f;
             int previousIndentLevel = EditorGUI.indentLevel;
 
@@ -125,9 +96,7 @@ namespace Practical.Internal
 
                 if (selectedGroupIndex == g)
                 {
-
                     // Use the same rect and render "on top" of it so it gives the appearance of editing the label
-
                     GUIContent foldoutName = new GUIContent(holder.DefinedGroups[g].groupName);
                     GUIStyle style = new GUIStyle();
                     style.fixedHeight = 20f;
@@ -156,7 +125,6 @@ namespace Practical.Internal
                                 holder.DefinedGroups[g].groupName = tempEditingGroupName;
                                 isEditingNameField = false;
                             }
-                            // Undo.RecordObject(holder, "Renamed Location Group");
                         }
 
                         editButtonRect.x += saveCancelButtonWidth + 5f;
@@ -187,20 +155,13 @@ namespace Practical.Internal
 
 
                     editButtonRect.xMin = itemRect.width + addButtonWidth * 0.3f;
-                    //editButtonRect.xMax = itemRect.width +  addButtonWidth * 0.3f; // Offset it just a tad
                     editButtonRect.width = addButtonWidth;
                     // SET COLOR
-                    //GUI.backgroundColor = xButtonColor;
-
                     if (GUI.Button(editButtonRect, "X"))
                     {
                         DeleteGroup(g);
                         showGroup = false;
                     }
-
-                    //if(GUILayout.Button("X", GUILayout.Width(addButtonWidth))) {
-                    //	DeleteGroup(g);
-                    //}
                     GUI.backgroundColor = initialColor;
                 }
                 else
@@ -238,17 +199,12 @@ namespace Practical.Internal
                     EditorGUILayout.EndVertical();
 
                     // Row 2
-
                     EditorGUILayout.BeginVertical();
                     workingSpawnLocation.selectedSpawnSize = (SelectedSpawnSize)EditorGUILayout.EnumPopup(workingSpawnLocation.selectedSpawnSize);
 
                     EditorGUILayout.BeginVertical();
                     if (workingSpawnLocation.selectedSpawnSize == SelectedSpawnSize.Custom)
                     {
-                        //float x = EditorGUILayout.FloatField("x", workingSpawnLocation.customSize.x);
-                        //float y = EditorGUILayout.FloatField("y", workingSpawnLocation.customSize.y);
-                        //float z = EditorGUILayout.FloatField("z", workingSpawnLocation.customSize.z);
-
                         float x = EditorGUILayout.FloatField("Size", workingSpawnLocation.customSize.x);
                         float y = 0.0f;
                         float z = 0.0f;
@@ -306,11 +262,9 @@ namespace Practical.Internal
 
                         GUILayout.FlexibleSpace();
                         // SET COLOR
-                        //GUI.backgroundColor = xButtonColor;
                         if (GUILayout.Button("X", GUILayout.Width(addButtonWidth)))
                         {
                             holder.DefinedGroups[g].spawnLocations.RemoveAt(s);
-                            //Undo.RecordObject(holder, "Deleted Location Group");
                         }
                         GUI.backgroundColor = initialColor;
                         EditorGUILayout.EndHorizontal();
@@ -331,13 +285,10 @@ namespace Practical.Internal
 
             EditorGUILayout.EndScrollView();
 
-            real.DefinedGroups = holder.DefinedGroups;
-
             if (holder != null)
             {
                 Undo.RecordObject(holder, "Updated Location Group");
             }
-            //serializedObject.UpdateIfRequiredOrScript();
         }
 
         public SpawnLocation CreateSpawnLocation(SelectedSpawnType _spawnType, SelectedSpawnSize _selectedSpawnSize, SelectedSpawnObject _selectedSpawnObject)
@@ -358,13 +309,6 @@ namespace Practical.Internal
                     break;
             }
             return new SpawnLocation(_spawnType, _selectedSpawnSize);
-        }
-
-        public void OnInspectorUpdate()
-        {
-            this.Repaint();
-            real.DefinedGroups = holder.DefinedGroups;
-            //Undo.RecordObject(holder, "Updated Location Group");
         }
 
         public void SetGroupIndex(int newIndex)
@@ -408,7 +352,6 @@ namespace Practical.Internal
                         holder.DefinedGroups.Add(new LocationGroup(newResult));
                         break;
                     }
-
                     // We didn't find a match, increment and try again
                     newIndex++;
                 }
@@ -416,19 +359,18 @@ namespace Practical.Internal
             }
             else
             {
-                holder.DefinedGroups.Add(new LocationGroup(newGroupName));
+                var newGrp = new LocationGroup(newGroupName);
+                holder.DefinedGroups.Add(newGrp);
             }
-            newGroupName = "";
             GUIUtility.keyboardControl = 0;
             Undo.RecordObject(holder, "Added Location Group");
-            real.DefinedGroups = holder.DefinedGroups;
+            newGroupName = "";
         }
 
         public void DeleteGroup(int index)
         {
             holder.DefinedGroups.RemoveAt(index);
             Undo.RecordObject(holder, "Deleted Location Group");
-            real.DefinedGroups = holder.DefinedGroups;
         }
     }
 }
