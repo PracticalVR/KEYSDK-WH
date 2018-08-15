@@ -19,6 +19,13 @@ KEYSDK should seamlessly upgrade to all current versions of unity. Please re-imp
 
 *Bonus -- give us some feedback!*
 
+### Capabilities
+
+   * Pictues Library (App will hang without it)
+   * Spatial Perception
+   * Internet Client
+   * Microphone (For Example Scene only)
+
 ## Theme Changes
 
 Through October, developers that sign-up and create their first application will gain permanent access to the Cyber, Nature, Frost, and Fire themes. To check them out, simply deploy an application utilizing the KEYSDK with an active API Key and click the buttons in the portal to change your theme.
@@ -27,7 +34,7 @@ Through October, developers that sign-up and create their first application will
 
 You can customize spawn groups with the Practical Location Builder script located on the Practical Manager prefab. Calls to the spawning API can only be made from async methods.
 
-### For Example:
+### Example:
 
 First, you must add the `Practical Location Builder` script to a gameobject within your scene. Note: turning the object into a prefab will break this script. Please only save the chosen object via the Unity scene. This editor tool is where you can easily add new groups and select the types of places you'd like them to spawn. 
 
@@ -81,4 +88,5 @@ There is an example folder that shows usage and has a scene to show functionalit
 * Returned locations are not always as random or spaced out as we would like.
 * The Practical Location Builder script throws a non-breaking error after pressing play.
 * Microphone is not enabled after receiving the permission pop-up on Windows RS4 and up.
+* The Practical Location Builder does not work properly when the game object it is attached to is turned into a prefab.
 
