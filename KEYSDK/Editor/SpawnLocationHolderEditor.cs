@@ -3,6 +3,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if NET_4_6
 using PracticalManaged.Practical.SpatialSpawning;
 
 namespace Practical.Internal
@@ -29,14 +30,14 @@ namespace Practical.Internal
         private GUIContent editButtonTexContent;
 
 
-        #region CONSTANTS
+#region CONSTANTS
         private const int UNSELECTED = -1;
         private const float addButtonWidth = 20f;
         private const float saveCancelButtonWidth = 40f;
         private const string editButtonString = "Edit";
         private const string doneButtonString = "Done";
         private const string cancelButtonString = "Cancel";
-        #endregion
+#endregion
 
         void OnEnable()
         {
@@ -181,11 +182,11 @@ namespace Practical.Internal
                         isEditingNameField = false;
                     }
 
-                    #region Display the Whole Group
+#region Display the Whole Group
 
                     EditorGUILayout.Separator();
 
-                    #region Display the New Spawn location
+#region Display the New Spawn location
 
                     EditorGUILayout.BeginHorizontal();
 
@@ -218,7 +219,7 @@ namespace Practical.Internal
 
                     EditorGUILayout.EndHorizontal();
 
-                    #endregion
+#endregion
 
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.FlexibleSpace();
@@ -270,7 +271,7 @@ namespace Practical.Internal
                         EditorGUILayout.EndHorizontal();
 
                     }
-                    #endregion
+#endregion
 
                 }
                 else if (selectedGroupIndex == g)
@@ -374,3 +375,4 @@ namespace Practical.Internal
         }
     }
 }
+#endif
