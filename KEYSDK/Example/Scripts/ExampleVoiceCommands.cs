@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Windows.Speech;
 using System.Linq;
-#if NET_4_6
 using PracticalManaged.Practical.SpatialSpawning;
 
 public class ExampleVoiceCommands : MonoBehaviour
@@ -96,4 +95,3 @@ public class ExampleVoiceCommands : MonoBehaviour
         }
     }
 }
-#endif

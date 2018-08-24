@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if NET_4_6
 using PracticalManaged.Practical.SpatialSpawning;
 namespace Practical.Internal
 {
@@ -15,4 +14,3 @@ namespace Practical.Internal
         }
     }
 }
-#endif
