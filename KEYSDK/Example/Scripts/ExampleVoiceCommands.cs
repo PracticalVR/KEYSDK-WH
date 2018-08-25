@@ -1,12 +1,16 @@
-﻿using System.Collections;
+﻿#if UNITY_WSA && ENABLE_AR
+#define HOLOLENS_XR_ENABLED
+using PracticalManaged.Practical.SpatialSpawning;
+#endif
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Windows.Speech;
 using System.Linq;
-using PracticalManaged.Practical.SpatialSpawning;
 
 public class ExampleVoiceCommands : MonoBehaviour
 {
+#if HOLOLENS_XR_ENABLED
     public GameObject RedDisk;
     public GameObject BlueDisk;
     public GameObject YellowDisk;
@@ -94,4 +98,5 @@ public class ExampleVoiceCommands : MonoBehaviour
             keywordAction.Invoke();
         }
     }
+#endif
 }
