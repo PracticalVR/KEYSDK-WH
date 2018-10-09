@@ -18,7 +18,12 @@ public class ExampleVoiceCommands : MonoBehaviour
     private Dictionary<string, System.Action> keywords = new Dictionary<string, System.Action>();
     private KeywordRecognizer keywordRecognizer = null;
 
-    private void Start()
+    public void MappingCompleteExample()
+    {
+        Initialize();
+    }
+
+    private void Initialize()
     {
         voiceCommandsInitialize();
 
@@ -27,10 +32,11 @@ public class ExampleVoiceCommands : MonoBehaviour
             Debug.Log("Group Name: " + item.groupName);
             foreach (var item2 in item.spawnLocations)
             {
-                Debug.Log("Spawn Type: " + item2.selectedSpawnType);
+                Debug.Log("Spawn Type: " + item2.GetParam<SpawnType>("spawnType"));
             }
         }
     }
+
     private void voiceCommandsInitialize()
     {
         keywords.Add("Red Spawn", () =>

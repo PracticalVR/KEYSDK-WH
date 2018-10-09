@@ -2,14 +2,13 @@
 using System.Text;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 #if UNITY_WSA && ENABLE_AR
 using PracticalManaged.Practical.SpatialSpawning;
 
 namespace Practical.Internal
 {
 
-    [CustomEditor(typeof(PracticalLocationBuilder))]
+    [CustomEditor(typeof(SpatialPlacementTool))]
     public class SpawnLocationHolderEditor : Editor
     {
         private int selectedGroupIndex;
@@ -23,25 +22,25 @@ namespace Practical.Internal
         [SerializeField]
         private Vector2 scrollPosition = Vector2.zero;
 
-        private SpawnLocation workingSpawnLocation = new SpawnLocation(SelectedSpawnType.Wall, SelectedSpawnSize.Small);
+        private SpawnLocation workingSpawnLocation = new SpawnLocation();
 
         private bool isEditingNameField = false;
         private Texture editButtonTex;
         private GUIContent editButtonTexContent;
 
 
-#region CONSTANTS
+        #region CONSTANTS
         private const int UNSELECTED = -1;
         private const float addButtonWidth = 20f;
         private const float saveCancelButtonWidth = 40f;
         private const string editButtonString = "Edit";
         private const string doneButtonString = "Done";
         private const string cancelButtonString = "Cancel";
-#endregion
+        #endregion
 
         void OnEnable()
         {
-            holder = (PracticalLocationBuilder)target;
+            holder = (SpatialPlacementTool)target;
             selectedGroupIndex = UNSELECTED;
             isEditingNameField = false;
             editButtonTex = (Texture)AssetDatabase.LoadAssetAtPath("Assets/Editor/Images/edit.png", typeof(Texture));
@@ -63,13 +62,19 @@ namespace Practical.Internal
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
             EditorGUILayout.BeginHorizontal();
-            newGroupName = EditorGUILayout.TextField(new GUIContent("New Group", "Add a new group"), newGroupName);
+            GUILayout.Label("New Group:");
+            newGroupName = EditorGUILayout.TextField("", newGroupName, GUILayout.Width(155));
 
+            //+ button click
             if (GUILayout.Button("+", GUILayout.Width(addButtonWidth)))
             {
                 if (FindNameMatch(newGroupName))
                 {
                     Debug.LogWarning("Group name: " + newGroupName + " already exists");
+                }
+                else if (newGroupName == "")
+                {
+                    Debug.LogWarning("Group name: can not be empty");
                 }
                 else
                 {
@@ -77,17 +82,18 @@ namespace Practical.Internal
                 }
                 Undo.RecordObject(holder, "Added New Location Group");
             }
+            GUILayout.Label("Unit");
+            DistanceUnit tempUnit = (DistanceUnit)EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<DistanceUnit>("distanceUnit"), GUILayout.Width(50));
+            workingSpawnLocation.SetParam("distanceUnit", tempUnit);
 
             EditorGUILayout.EndHorizontal();
-
 
             EditorGUI.indentLevel++;
             Color initialColor = GUI.backgroundColor;
 
-            for (int g = 0; g < holder.DefinedGroups.Count; g++)
+            for (int i = 0; i < holder.DefinedGroups.Count; i++)
             {
-
-                LocationGroup grp = holder.DefinedGroups[g];
+                LocationGroup grp = holder.DefinedGroups[i];
 
                 EditorGUILayout.BeginVertical("Box");
 
@@ -95,10 +101,11 @@ namespace Practical.Internal
 
                 bool showGroup = false;
 
-                if (selectedGroupIndex == g)
+                //Edit existed element
+                if (selectedGroupIndex == i)
                 {
                     // Use the same rect and render "on top" of it so it gives the appearance of editing the label
-                    GUIContent foldoutName = new GUIContent(holder.DefinedGroups[g].groupName);
+                    GUIContent foldoutName = new GUIContent(holder.DefinedGroups[i].groupName);
                     GUIStyle style = new GUIStyle();
                     style.fixedHeight = 20f;
 
@@ -111,19 +118,25 @@ namespace Practical.Internal
                     editButtonRect.width = saveCancelButtonWidth;
                     editButtonRect.x = itemRect.width + saveCancelButtonWidth * 0.75f;
 
+                    //Editing name field
                     if (isEditingNameField)
                     {
                         tempEditingGroupName = GUI.TextField(itemRect, tempEditingGroupName);
 
+                        //Edit save button click
                         if (GUI.Button(editButtonRect, doneButtonString))
                         {
-                            if (!tempEditingGroupName.Equals(holder.DefinedGroups[g].groupName) && FindNameMatch(tempEditingGroupName))
+                            if (!tempEditingGroupName.Equals(holder.DefinedGroups[i].groupName) && FindNameMatch(tempEditingGroupName))
                             {
                                 Debug.LogWarning("Group name: " + tempEditingGroupName + " already exists");
                             }
+                            else if (tempEditingGroupName == "")
+                            {
+                                Debug.LogWarning("Group name: can not be empty");
+                            }
                             else
                             {
-                                holder.DefinedGroups[g].groupName = tempEditingGroupName;
+                                holder.DefinedGroups[i].groupName = tempEditingGroupName;
                                 isEditingNameField = false;
                             }
                         }
@@ -138,12 +151,10 @@ namespace Practical.Internal
                     }
                     else
                     {
-
-                        GUI.Label(itemRect, holder.DefinedGroups[g].groupName);
+                        GUI.Label(itemRect, holder.DefinedGroups[i].groupName);
                         if (GUI.Button(editButtonRect, editButtonTexContent))
                         {
-
-                            tempEditingGroupName = holder.DefinedGroups[g].groupName;
+                            tempEditingGroupName = holder.DefinedGroups[i].groupName;
                             isEditingNameField = true;
                         }
                     }
@@ -152,138 +163,249 @@ namespace Practical.Internal
                     itemRect.x -= 15f;
                     itemRect.width = itemRect.width * 2.5f - addButtonWidth;
 
-                    showGroup = EditorGUI.Foldout(itemRect, (selectedGroupIndex == g), "", true);
-
+                    showGroup = EditorGUI.Foldout(itemRect, (selectedGroupIndex == i), "", true);
 
                     editButtonRect.xMin = itemRect.width + addButtonWidth * 0.3f;
                     editButtonRect.width = addButtonWidth;
                     // SET COLOR
                     if (GUI.Button(editButtonRect, "X"))
                     {
-                        DeleteGroup(g);
+                        DeleteGroup(i);
                         showGroup = false;
                     }
                     GUI.backgroundColor = initialColor;
                 }
                 else
                 {
-                    showGroup = EditorGUILayout.Foldout((selectedGroupIndex == g), holder.DefinedGroups[g].groupName, true);
+                    showGroup = EditorGUILayout.Foldout((selectedGroupIndex == i), holder.DefinedGroups[i].groupName, true);
                 }
 
                 EditorGUILayout.EndHorizontal();
 
-
+                //if one of them is selected
                 if (showGroup)
                 {
-
-                    if (selectedGroupIndex != g)
+                    if (selectedGroupIndex != i)
                     {
-                        selectedGroupIndex = g;
+                        selectedGroupIndex = i;
                         isEditingNameField = false;
                     }
 
-#region Display the Whole Group
+                    #region Display the Whole Group
 
                     EditorGUILayout.Separator();
 
-#region Display the New Spawn location
+                    #region Display the New Spawn location
 
                     EditorGUILayout.BeginHorizontal();
 
                     EditorGUILayout.BeginVertical();
-                    workingSpawnLocation.selectedSpawnType = (SelectedSpawnType)EditorGUILayout.EnumPopup(workingSpawnLocation.selectedSpawnType);
+                    EditorGUILayout.BeginVertical("Box");
 
-                    if (workingSpawnLocation.selectedSpawnType == SelectedSpawnType.Object)
+                    GUILayout.Label("Spawn Type");
+                    EditorGUILayout.BeginHorizontal();
+                    workingSpawnLocation.SetParam("spawnType", EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<SpawnType>("spawnType"), GUILayout.MaxWidth(130)));
+                    EditorGUILayout.EndHorizontal();
+
+                    if (workingSpawnLocation.GetParam<SpawnType>("spawnType") == SpawnType.Wall)
                     {
-                        workingSpawnLocation.selectedSpawnObject = (SelectedSpawnObject)EditorGUILayout.EnumPopup(workingSpawnLocation.selectedSpawnObject);
+                        GUILayout.Label("Min Height - Max Height");
+                        EditorGUILayout.BeginHorizontal();
+                        workingSpawnLocation.SetParam("heightMin", EditorGUILayout.FloatField("", workingSpawnLocation.GetParam<float>("heightMin"), GUILayout.MaxWidth(60)));
+                        workingSpawnLocation.SetParam("heightMax", EditorGUILayout.FloatField("", workingSpawnLocation.GetParam<float>("heightMax"), GUILayout.MaxWidth(60)));
+                        EditorGUILayout.EndHorizontal();
                     }
+                    if (workingSpawnLocation.GetParam<SpawnType>("spawnType") == SpawnType.RoomObjects)
+                    {
+                        GUILayout.Label("Spawn Room Object");
+                        workingSpawnLocation.SetParam("spawnObject", EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<SpawnObject>("spawnObject"), GUILayout.MaxWidth(130)));
+                    }
+                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndVertical();
 
                     // Row 2
+                    EditorGUILayout.BeginVertical("Box");
                     EditorGUILayout.BeginVertical();
-                    workingSpawnLocation.selectedSpawnSize = (SelectedSpawnSize)EditorGUILayout.EnumPopup(workingSpawnLocation.selectedSpawnSize);
+                    GUILayout.Label("Spawn Option");
+                    workingSpawnLocation.SetParam("fromOption", EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<FromOption>("fromOption"), GUILayout.MaxWidth(130)));
 
-                    EditorGUILayout.BeginVertical();
-                    if (workingSpawnLocation.selectedSpawnSize == SelectedSpawnSize.Custom)
+                    if (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Away)
                     {
-                        float x = EditorGUILayout.FloatField("Size", workingSpawnLocation.customSize.x);
-                        float y = 0.0f;
-                        float z = 0.0f;
+                        GUILayout.Label("From");
+                        workingSpawnLocation.SetParam("awayFrom", EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<AwayFrom>("awayFrom"), GUILayout.MaxWidth(130)));
+                    }
+                    else if (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Near)
+                    {
+                        GUILayout.Label("To");
+                        workingSpawnLocation.SetParam("nearTo", EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<NearTo>("nearTo"), GUILayout.MaxWidth(130)));
+                    }
 
-                        workingSpawnLocation.customSize = new Vector3(x, y, z);
+                    if (workingSpawnLocation.GetParam<FromOption>("fromOption") != FromOption.None && (workingSpawnLocation.GetParam<AwayFrom>("awayFrom") != AwayFrom.None || workingSpawnLocation.GetParam<AwayFrom>("nearTo") != AwayFrom.None))
+                    {
+                        if ((workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Away && workingSpawnLocation.GetParam<AwayFrom>("awayFrom") == AwayFrom.GameObject) || (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Near && workingSpawnLocation.GetParam<NearTo>("nearTo") == NearTo.GameObject))
+                        {
+                            GUILayout.Label("GameObject");
+                            workingSpawnLocation.fromObject = (GameObject)EditorGUILayout.ObjectField(workingSpawnLocation.fromObject, typeof(GameObject), true, GUILayout.MaxWidth(130));
+                        }
+
+                        if (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Near && workingSpawnLocation.GetParam<NearTo>("nearTo") != NearTo.None)
+                        {
+                            GUILayout.Label("Min Distance - Max Distance");
+                            EditorGUILayout.BeginHorizontal();
+                            workingSpawnLocation.SetParam("minDistance", EditorGUILayout.FloatField("", workingSpawnLocation.GetParam<float>("minDistance"), GUILayout.MaxWidth(60)));
+                            workingSpawnLocation.SetParam("maxDistance", EditorGUILayout.FloatField("", workingSpawnLocation.GetParam<float>("maxDistance"), GUILayout.MaxWidth(60)));
+                            EditorGUILayout.EndHorizontal();
+                        }
+                        else if (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Away && workingSpawnLocation.GetParam<AwayFrom>("awayFrom") != AwayFrom.None)
+                        {
+                            GUILayout.Label("Min Distance");
+                            EditorGUILayout.BeginHorizontal();
+                            workingSpawnLocation.SetParam("minDistance", EditorGUILayout.FloatField("", workingSpawnLocation.GetParam<float>("minDistance"), GUILayout.MaxWidth(60)));
+                            EditorGUILayout.EndHorizontal();
+                        }
+
+                        if ((workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Near && workingSpawnLocation.GetParam<NearTo>("nearTo") == NearTo.Walls) || (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Away && workingSpawnLocation.GetParam<AwayFrom>("awayFrom") == AwayFrom.Walls))
+                        {
+                            GUILayout.Label("Min Wall Height");
+                            EditorGUILayout.BeginHorizontal();
+                            workingSpawnLocation.SetParam("minWallHeight", EditorGUILayout.FloatField("", workingSpawnLocation.GetParam<float>("minWallHeight"), GUILayout.MaxWidth(60)));
+                            EditorGUILayout.EndHorizontal();
+                        }
+                    }
+                    GUILayout.Label("Size");
+                    workingSpawnLocation.SetParam("spawnSize", EditorGUILayout.EnumPopup(workingSpawnLocation.GetParam<SpawnSize>("spawnSize"), GUILayout.MaxWidth(130)));
+
+                    EditorGUILayout.BeginVertical();
+                    if (workingSpawnLocation.GetParam<SpawnSize>("spawnSize") == SpawnSize.Custom)
+                    {
+                        GUILayout.Label("Custom Size");
+                        workingSpawnLocation.SetParam("halfDims", EditorGUILayout.Vector3Field("", workingSpawnLocation.GetParam<Vector3>("halfDims")));
+                    }
+                    else if (workingSpawnLocation.GetParam<SpawnSize>("spawnSize") == SpawnSize.CopyFromObject)
+                    {
+                        GUILayout.Label("Size From GameObject");
+                        workingSpawnLocation.customSizeFromObject = (GameObject)EditorGUILayout.ObjectField(workingSpawnLocation.customSizeFromObject, typeof(GameObject), true, GUILayout.MaxWidth(130));
                     }
 
                     EditorGUILayout.EndVertical();
-
                     EditorGUILayout.EndVertical();
-
+                    EditorGUILayout.EndVertical();
                     EditorGUILayout.EndHorizontal();
-
-#endregion
+                    #endregion
 
                     EditorGUILayout.BeginHorizontal();
                     GUILayout.FlexibleSpace();
+                    //Add To List button click
                     if (GUILayout.Button("Add To List", GUILayout.Width(addToListButtonWidth)))
                     {
-                        SpawnLocation newSpawn = CreateSpawnLocation(workingSpawnLocation.selectedSpawnType, workingSpawnLocation.selectedSpawnSize, workingSpawnLocation.selectedSpawnObject);
-                        newSpawn.customSize = workingSpawnLocation.customSize;
-                        newSpawn.selectedSpawnObject = workingSpawnLocation.selectedSpawnObject;
-
-                        holder.DefinedGroups[g].spawnLocations.Add(newSpawn);
-                        Undo.RecordObject(holder, "Added Spawn Type");
-                    }
-
-                    EditorGUILayout.EndHorizontal();
-
-                    for (int s = 0; s < holder.DefinedGroups[g].spawnLocations.Count; s++)
-                    {
-
-                        EditorGUILayout.BeginHorizontal("Box");
-
-                        SpawnLocation spawn = holder.DefinedGroups[g].spawnLocations[s];
-
-                        StringBuilder spawnLabel = new StringBuilder();
-
-                        spawnLabel.Append(spawn.selectedSpawnType == SelectedSpawnType.Object ?
-                            spawn.selectedSpawnObject.ToString() :
-                            spawn.selectedSpawnType.ToString());
-
-                        spawnLabel.Append(" - ");
-
-                        if (spawn.selectedSpawnSize == SelectedSpawnSize.Custom)
+                        if (workingSpawnLocation.GetParam<SpawnType>("spawnType") == SpawnType.RoomObjects && workingSpawnLocation.GetParam<SpawnObject>("spawnObject") == SpawnObject.None)
                         {
-                            spawnLabel.AppendFormat("Custom Size: (" + spawn.customSize.x + ")");
+                            Debug.LogWarning("Spawn room object has to be selected");
                         }
                         else
                         {
-                            spawnLabel.Append(spawn.selectedSpawnSize.ToString());
+                            SpawnLocation newSpawn = CreateSpawnLocation(workingSpawnLocation.GetParam<SpawnType>("spawnType"));
+                            newSpawn.SetParam("halfDims", workingSpawnLocation.GetParam<Vector3>("halfDims"));
+                            newSpawn.SetParam("minDistance", workingSpawnLocation.GetParam<float>("minDistance"));
+                            newSpawn.SetParam("spawnType", workingSpawnLocation.GetParam<SpawnType>("spawnType"));
+                            newSpawn.SetParam("spawnSize", workingSpawnLocation.GetParam<SpawnSize>("spawnSize"));
+                            newSpawn.SetParam("fromOption", workingSpawnLocation.GetParam<FromOption>("fromOption"));
+                            newSpawn.SetParam("distanceUnit", workingSpawnLocation.GetParam<DistanceUnit>("distanceUnit"));
+
+
+                            if (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Near && workingSpawnLocation.GetParam<NearTo>("nearTo") != NearTo.None)
+                            {
+                                newSpawn.SetParam("maxDistance", workingSpawnLocation.GetParam<float>("maxDistance"));
+                            }
+
+                            if (workingSpawnLocation.GetParam<SpawnType>("spawnType") == SpawnType.Wall)
+                            {
+                                newSpawn.SetParam("heightMin", workingSpawnLocation.GetParam<float>("heightMin"));
+                                newSpawn.SetParam("heightMax", workingSpawnLocation.GetParam<float>("heightMax"));
+                            }
+
+                            if (workingSpawnLocation.GetParam<FromOption>("fromOption") != FromOption.None)
+                            {
+                                newSpawn.SetParam("awayFrom", workingSpawnLocation.GetParam<AwayFrom>("awayFrom"));
+                                newSpawn.SetParam("nearTo", workingSpawnLocation.GetParam<NearTo>("nearTo"));
+                                if (workingSpawnLocation.GetParam<AwayFrom>("awayFrom") == AwayFrom.GameObject || workingSpawnLocation.GetParam<NearTo>("nearTo") == NearTo.GameObject)
+                                {
+                                    newSpawn.fromObject = workingSpawnLocation.fromObject;
+                                }
+
+                                if ((workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Near && workingSpawnLocation.GetParam<NearTo>("nearTo") == NearTo.Walls) || (workingSpawnLocation.GetParam<FromOption>("fromOption") == FromOption.Away && workingSpawnLocation.GetParam<AwayFrom>("awayFrom") == AwayFrom.Walls))
+                                {
+                                    newSpawn.SetParam("minWallHeight", workingSpawnLocation.GetParam<float>("minWallHeight"));
+                                }
+                            }
+
+                            if (workingSpawnLocation.GetParam<SpawnType>("spawnType") == SpawnType.RoomObjects)
+                            {
+                                newSpawn.SetParam("spawnObject", workingSpawnLocation.GetParam<SpawnObject>("spawnObject"));
+                            }
+
+                            if (workingSpawnLocation.GetParam<SpawnSize>("spawnSize") == SpawnSize.CopyFromObject)
+                            {
+                                newSpawn.customSizeFromObject = workingSpawnLocation.customSizeFromObject;
+                            }
+                            holder.DefinedGroups[i].spawnLocations.Add(newSpawn);
+                            Undo.RecordObject(holder, "Added Spawn Type");
+                        }
+                    }
+                    EditorGUILayout.EndHorizontal();
+
+                    //Added subspawn elements show part
+                    for (int j = 0; j < holder.DefinedGroups[i].spawnLocations.Count; j++)
+                    {
+                        EditorGUILayout.BeginHorizontal("Box");
+                        SpawnLocation spawn = holder.DefinedGroups[i].spawnLocations[j];
+                        StringBuilder spawnLabel = new StringBuilder();
+                        spawnLabel.Append(spawn.GetParam<SpawnType>("spawnType") == SpawnType.RoomObjects ?
+                            spawn.GetParam<SpawnObject>("spawnObject").ToString() :
+                            spawn.GetParam<SpawnType>("spawnType").ToString());
+
+                        spawnLabel.Append("-");
+                        if (spawn.GetParam<FromOption>("fromOption") == FromOption.Away && spawn.GetParam<AwayFrom>("awayFrom") != AwayFrom.None)
+                        {
+                            spawnLabel.Append(spawn.GetParam<AwayFrom>("awayFrom").ToString() + "(" + spawn.GetParam<float>("minDistance").ToString() + ")");
+                            spawnLabel.Append("-");
+                        }
+                        else if (spawn.GetParam<FromOption>("fromOption") == FromOption.Near && spawn.GetParam<NearTo>("nearTo") != NearTo.None)
+                        {
+                            spawnLabel.Append(spawn.GetParam<NearTo>("nearTo").ToString() + "(" + spawn.GetParam<float>("minDistance").ToString() + "-" + spawn.GetParam<float>("maxDistance").ToString() + ")");
+                            spawnLabel.Append("-");
                         }
 
-                        EditorGUILayout.LabelField(spawnLabel.ToString());
-
+                        if (spawn.GetParam<SpawnSize>("spawnSize") == SpawnSize.Custom)
+                        {
+                            spawnLabel.AppendFormat("Custom Size:(" + spawn.GetParam<Vector3>("halfDims").x + "-" + spawn.GetParam<Vector3>("halfDims").y + "-" + spawn.GetParam<Vector3>("halfDims").z + ")");
+                        }
+                        else
+                        {
+                            spawnLabel.Append(spawn.GetParam<SpawnSize>("spawnSize").ToString());
+                        }
+                        GUIStyle guiStyle = new GUIStyle();
+                        guiStyle.fontSize = 9;
+                        GUILayout.Label(spawnLabel.ToString(), guiStyle);
                         GUILayout.FlexibleSpace();
                         // SET COLOR
                         if (GUILayout.Button("X", GUILayout.Width(addButtonWidth)))
                         {
-                            holder.DefinedGroups[g].spawnLocations.RemoveAt(s);
+                            holder.DefinedGroups[i].spawnLocations.RemoveAt(j);
                         }
                         GUI.backgroundColor = initialColor;
                         EditorGUILayout.EndHorizontal();
-
                     }
-#endregion
-
+                    #endregion
                 }
-                else if (selectedGroupIndex == g)
+                else if (selectedGroupIndex == i)
                 {
                     selectedGroupIndex = UNSELECTED;
                 }
-
                 EditorGUILayout.EndVertical();
             }
 
             EditorGUI.indentLevel = previousIndentLevel;
-
             EditorGUILayout.EndScrollView();
 
             if (holder != null)
@@ -292,29 +414,31 @@ namespace Practical.Internal
             }
         }
 
-        public SpawnLocation CreateSpawnLocation(SelectedSpawnType _spawnType, SelectedSpawnSize _selectedSpawnSize, SelectedSpawnObject _selectedSpawnObject)
+        public SpawnLocation CreateSpawnLocation(SpawnType _spawnType)
         {
+            SpawnLocation retVal = null;
             switch (_spawnType)
             {
-                case SelectedSpawnType.Wall:
-                    return new WallSpawnLocation(_spawnType, _selectedSpawnSize);
-                case SelectedSpawnType.Floor:
-                    return new FloorSpawnLocation(_spawnType, _selectedSpawnSize);
-                case SelectedSpawnType.Ceiling:
-                    return new CeilingSpawnLocation(_spawnType, _selectedSpawnSize);
-                case SelectedSpawnType.Air:
-                    return new AirSpawnLocation(_spawnType, _selectedSpawnSize);
-                case SelectedSpawnType.Object:
-                    return new ObjectSpawnLocation(_spawnType, _selectedSpawnSize, _selectedSpawnObject);
+                case SpawnType.Wall:
+                    retVal = new WallSpawnLocation();
+                    break;
+                case SpawnType.Floor:
+                    retVal = new FloorSpawnLocation();
+                    break;
+                case SpawnType.Ceiling:
+                    retVal = new CeilingSpawnLocation();
+                    break;
+                case SpawnType.Air:
+                    retVal = new AirSpawnLocation();
+                    break;
+                case SpawnType.RoomObjects:
+                    retVal = new RoomObjectsSpawnLocation();
+                    break;
                 default:
+                    retVal = new SpawnLocation();
                     break;
             }
-            return new SpawnLocation(_spawnType, _selectedSpawnSize);
-        }
-
-        public void SetGroupIndex(int newIndex)
-        {
-            selectedGroupIndex = newIndex;
+            return retVal;
         }
 
         private bool FindNameMatch(string nameToMatch)
@@ -331,7 +455,6 @@ namespace Practical.Internal
 
         public void AddNewGroup()
         {
-
             bool foundMatch = FindNameMatch(newGroupName);
 
             if (foundMatch)
@@ -356,7 +479,6 @@ namespace Practical.Internal
                     // We didn't find a match, increment and try again
                     newIndex++;
                 }
-
             }
             else
             {
