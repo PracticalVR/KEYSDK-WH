@@ -1,10 +1,14 @@
-# KeySDK-WH
+# KEYSDK-WH
 
 ![logo](key.png)
 
 ## Target Unity Version: 2017.4.0f1
 
 KEYSDK should seamlessly upgrade to all current versions of unity. Please re-import the PracticaManaged DLL if you run into issues upgrading.
+
+## Release Notes
+
+https://medium.com/@Micheal.Reed/key-sdk-tools-for-a-dynamic-mixed-reality-release-0-3-0-3a86fbed7d7d
 
 ## Setup Guide
 
@@ -30,13 +34,17 @@ KEYSDK should seamlessly upgrade to all current versions of unity. Please re-imp
 
 Through October, developers that sign-up and create their first application will gain permanent access to the Cyber, Nature, Frost, and Fire themes. To check them out, simply deploy an application utilizing the KEYSDK with an active API Key and click the buttons in the portal to change your theme.
 
-## Practical Location Builder
+## Mapping Complete
+
+On the Practical Manager GameObject, you should now see a script named "Mapping". This script now contains a simple event handler that allows you to trigger a function of your choosing after we have completed mapping. Scene changes are recommended, but you can use this event any way that you choose.
+
+## Spatial Placement Tool
 
 You can customize spawn groups with the Practical Location Builder script located on the Practical Manager prefab. Calls to the spawning API can only be made from async methods.
 
 ### Example:
 
-First, you must add the `Practical Location Builder` script to a gameobject within your scene. Note: turning the object into a prefab will break this script. Please only save the chosen object via the Unity scene. This editor tool is where you can easily add new groups and select the types of places you'd like them to spawn. 
+First, you must add the `Spatial Placement Tool` script to a gameobject within your scene. Note: turning the object into a prefab will break this script. Please only save the chosen object via the Unity scene. This editor tool is where you can easily add new groups and select the types of places you'd like them to spawn. 
 
 Now, include the spawning system into your script:
 
@@ -85,8 +93,5 @@ There is an example folder that shows usage and has a scene to show functionalit
 
 * There is a slight hang at the start of the application as it downloads a new theme. UX improvement to come.
 * The application will not start at all unless a valid API Key is provided. Check phantom spacing at the front and back of your key.
-* Returned locations are not always as random or spaced out as we would like.
-* The Practical Location Builder script throws a non-breaking error after pressing play.
 * Microphone is not enabled after receiving the permission pop-up on Windows RS4 and up.
-* The Practical Location Builder does not work properly when the game object it is attached to is turned into a prefab.
 
