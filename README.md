@@ -13,13 +13,13 @@ https://medium.com/@Micheal.Reed/key-sdk-tools-for-a-dynamic-mixed-reality-relea
 ## Setup Guide
 
 1. Register at https://developer.practicalvr.com
-2. Join discord.practicalvr.com for approval.
-3. Create an application in the portal and copy your API Key.
-4. *Important* - before importing, in player settings, set the "Scripting Runtime Version" to 4.6 and the "Scripting Backend" to .NET.
-5. Import KEYSDK and StreamingAssets folders.
-6. Place the "PracticalManager" and optional "PracticalCamera" prefabs into scene.
-7. Insert API Key into Practical Manager.
-8. Hit play and start developing!
+2. Create an application in the portal and copy your API Key.
+3. *Important* - before importing, in player settings, set the "Scripting Runtime Version" to 4.6 and the "Scripting Backend" to .NET.
+4. Import KEYSDK and StreamingAssets folders.
+5. Place the "PracticalManager" and optional "PracticalCamera" prefabs into scene.
+6. Insert API Key into Practical Manager.
+7. Hit play and start developing!
+8. Add in the spatial placement tool and start defining where you want things placed. See the Spatial Placement Tool section below for more details.
 
 *Bonus -- give us some feedback!*
 
